@@ -1,15 +1,14 @@
 import * as PIXI from 'pixi.js';
 import { SmoothGraphics as Graphics } from '@pixi/graphics-smooth';
 
+import { Line } from './components/Line';
+import { AxisFilter, AxisLine, AxisText } from './components/Axis';
+
+/* --- Constants --- */
 const width = window.innerWidth;
 const height = 600;
 const xOffset = 50;
 const yOffset = 50;
-const antialiasing = true;
-
-let numAxis;
-let axisSpacing;
-let axisScales;
 
 function generateRandomData(numberRows, numberCols) {
   let rows = [];
@@ -37,7 +36,7 @@ function getPercentage(value, min, max) {
   return (value - min) / (max - min);
 }
 
-function calculateLine(points) {
+function calculateLine(points, numAxis, axisSpacing, axisScales) {
   let lineNew = [];
   for (let i = 0; i < numAxis; i++) {
     lineNew.push(xOffset + i * axisSpacing, yOffset + height * (1 - getPercentage(points[i], axisScales[i].min, axisScales[i].max)));
@@ -45,53 +44,41 @@ function calculateLine(points) {
   return lineNew;
 }
 
-function drawAxis(app, rows) {
-  numAxis = rows[0].length;
-  axisSpacing = width / (numAxis + 1);
-  axisScales = getMinMaxByColumn(rows);
-
-  let graphics;
-  for (let i = 0; i < numAxis; i++) {
-    graphics = antialiasing ? new Graphics() : new PIXI.Graphics;
-    graphics.lineStyle(1, 0x000000, 1);
-    graphics.moveTo(xOffset + i * axisSpacing, yOffset);
-    graphics.lineTo(xOffset + i * axisSpacing, yOffset + height);
-    app.stage.addChild(graphics);
-
-    const text = new PIXI.Text(`Dim-${i}`, {
-      fontFamily: "Arial",
-      fontSize: 24,
-      fill: "black"
-    });
-    text.position.set(i * axisSpacing, height + yOffset + 20);
-    app.stage.addChild(text);
-  }
-}
-
-function drawLines(app, rows) {
-  let graphics;
-  let points;
-  for (let i = 0; i < rows.length; i++) {
-    points = calculateLine(rows[i]);
-
-    graphics = antialiasing ? new Graphics() : new PIXI.Graphics;
-    graphics.lineStyle(2, 0x0000ff, 1);
-    graphics.moveTo(points[0], points[1]);
-    for (let i = 2; i < points.length; i+=2)
-      graphics.lineTo(points[i], points[i+1]);
-    app.stage.addChild(graphics);
-  }
-}
-
 function main() {
   let app = new PIXI.Application({ 
     width: width, height: height+yOffset+50, backgroundColor: 0xffffff });
   document.body.appendChild(app.view);
 
-  const rows = generateRandomData(100, 20);
+  app.stage.interactive = true;
 
-  drawAxis(app, rows);
-  drawLines(app, rows);
+  // Generate random data
+  const rows = generateRandomData(100, 10);
+
+  let numAxis = rows[0].length;
+  let axisSpacing = width / (numAxis + 1);
+  let axisScales = getMinMaxByColumn(rows);
+
+  // Draw axes
+  let axisLine, axisText, axisFilterUpper, axisFilterLower;
+  for (let i = 0; i < numAxis; i++) {
+    axisLine = new AxisLine([xOffset + i * axisSpacing, yOffset], [xOffset + i * axisSpacing, yOffset + height])
+    axisText = new AxisText(`Dim-${i}`, {
+      fontFamily: "Arial",
+      fontSize: 24,
+      fill: "black"
+    },
+    [i * axisSpacing, height + yOffset + 20]);
+    axisFilterUpper = new AxisFilter(app, "upper", [xOffset + i * axisSpacing, yOffset]);
+    axisFilterLower = new AxisFilter(app, "lower", [xOffset + i * axisSpacing, yOffset + height]);
+    app.stage.addChild(axisLine, axisText, axisFilterUpper, axisFilterLower);
+  }
+
+  // Draw lines
+  let line;
+  for (let i = 0; i < rows.length; i++) {
+    line = new Line(calculateLine(rows[i], numAxis, axisSpacing, axisScales));
+    app.stage.addChild(line);
+  }
 }
 
 main();

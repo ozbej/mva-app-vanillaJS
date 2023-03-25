@@ -52,7 +52,7 @@ function main() {
   app.stage.interactive = true;
 
   // Generate random data
-  const rows = generateRandomData(100, 10);
+  const rows = generateRandomData(100, 3);
 
   let numAxis = rows[0].length;
   let axisSpacing = width / (numAxis + 1);

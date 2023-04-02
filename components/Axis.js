@@ -17,22 +17,25 @@ class AxisText extends PIXI.Text {
 }
 
 class AxisFilter extends PIXI.Graphics {
-  constructor(app, type, points) {
+  constructor(app, type, points, onDragStart) {
     super();
+    this.positionX = points[0]-5;
     this.app = app;
     this.beginFill(0x000000);
     this.lineStyle(2, 0x000000, 1);
     if (type === "upper") { // Draw upper filter rectangle
-      this.moveTo(points[0]-5, points[1]-10);
-      this.lineTo(points[0]+5, points[1]-10);
-      this.lineTo(points[0], points[1]);
-      this.lineTo(points[0]-5, points[1]-10);
+      this.moveTo(0, 0);
+      this.lineTo(10, 0);
+      this.lineTo(5, 10);
+      this.lineTo(0, 0);
+      this.position.set(points[0]-5, points[1]-10);
     }
     else if (type === "lower") { // Draw lower filter rectangle
-      this.moveTo(points[0]-5, points[1]+10);
-      this.lineTo(points[0]+5, points[1]+10);
-      this.lineTo(points[0], points[1]);
-      this.lineTo(points[0]-5, points[1]+10);
+      this.moveTo(0, 10);
+      this.lineTo(10, 10);
+      this.lineTo(5, 0);
+      this.lineTo(0, 10);
+      this.position.set(points[0]-5, points[1]);
     }
     else console.error("Error: Invalid AxisFilter.type value");
     this.endFill();
@@ -41,31 +44,7 @@ class AxisFilter extends PIXI.Graphics {
     this.interactive = true;
     this.cursor = 'pointer';
 
-    // Add event listeners for dragging behavior
-    this.on('pointerdown', this.onDragStart);
-    this.on('pointerup', this.onDragEnd);
-    this.on('pointerupoutside', this.onDragEnd);
-    this.on('pointermove', this.onDragMove);
-  }
-
-  onDragStart(e) {
-    this.data = e.data;
-    this.alpha = 0.5;
-    this.dragging = true;
-  }
-
-  onDragEnd() {
-    this.alpha = 1;
-    this.dragging = false;
-    this.data = null;
-  }
-
-  onDragMove() {
-    if (this.dragging) {
-      const newPosition = this.data.getLocalPosition(this.parent);
-      this.x = newPosition.x;
-      this.y = newPosition.y;
-    }
+    this.on('pointerdown', onDragStart, this);
   }
 }
 

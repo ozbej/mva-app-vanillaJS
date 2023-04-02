@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js';
-import { SmoothGraphics as Graphics } from '@pixi/graphics-smooth';
 
 import { Line } from './components/Line';
 import { AxisFilter, AxisLine, AxisText } from './components/Axis';
@@ -44,12 +43,32 @@ function calculateLine(points, numAxis, axisSpacing, axisScales) {
   return lineNew;
 }
 
-function main() {
-  let app = new PIXI.Application({ 
-    width: width, height: height+yOffset+50, backgroundColor: 0xffffff });
-  document.body.appendChild(app.view);
+function onDragMove(event) {
+  if (dragTarget) {
+      dragTarget.parent.toLocal(event.global, null, dragTarget.position);
+      dragTarget.position.x = dragTarget.positionX;
+  }
+}
 
+function onDragStart() {
+  this.alpha = 0.5;
+  dragTarget = this;
+  app.stage.on('pointermove', onDragMove);
+}
+
+function onDragEnd() {
+  if (dragTarget) {
+      app.stage.off('pointermove', onDragMove);
+      dragTarget.alpha = 1;
+      dragTarget = null;
+  }
+}
+
+function main() {
   app.stage.interactive = true;
+  app.stage.hitArea = app.screen;
+  app.stage.on('pointerup', onDragEnd);
+  app.stage.on('pointerupoutside', onDragEnd);
 
   // Generate random data
   const rows = generateRandomData(100, 3);
@@ -68,8 +87,8 @@ function main() {
       fill: "black"
     },
     [i * axisSpacing, height + yOffset + 20]);
-    axisFilterUpper = new AxisFilter(app, "upper", [xOffset + i * axisSpacing, yOffset]);
-    axisFilterLower = new AxisFilter(app, "lower", [xOffset + i * axisSpacing, yOffset + height]);
+    axisFilterUpper = new AxisFilter(app, "upper", [xOffset + i * axisSpacing, yOffset], onDragStart);
+    axisFilterLower = new AxisFilter(app, "lower", [xOffset + i * axisSpacing, yOffset + height], onDragStart);
     app.stage.addChild(axisLine, axisText, axisFilterUpper, axisFilterLower);
   }
 
@@ -80,5 +99,11 @@ function main() {
     app.stage.addChild(line);
   }
 }
+
+let app = new PIXI.Application({ 
+  width: width, height: height+yOffset+50, backgroundColor: 0xffffff });
+document.body.appendChild(app.view);
+
+let dragTarget = null;
 
 main();

@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 
-class AxisLine extends PIXI.Graphics {
+class AxisLinePixi extends PIXI.Graphics {
   constructor(startPoint, endPoint) {
     super();
     this.lineStyle(3, 0x000000, 1);
@@ -9,14 +9,14 @@ class AxisLine extends PIXI.Graphics {
   }
 }
 
-class AxisText extends PIXI.Text {
+class AxisTextPixi extends PIXI.Text {
   constructor(text, style, position) {
     super(text, style);
     this.position.set(position[0], position[1]);
   }
 }
 
-class AxisFilter extends PIXI.Graphics {
+class AxisFilterPixi extends PIXI.Graphics {
   constructor(app, type, points, onDragStart) {
     super();
     this.positionX = points[0]-5;
@@ -48,4 +48,4 @@ class AxisFilter extends PIXI.Graphics {
   }
 }
 
-export { AxisLine, AxisText, AxisFilter };
+export { AxisLinePixi, AxisTextPixi, AxisFilterPixi };

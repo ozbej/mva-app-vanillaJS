@@ -1,11 +1,16 @@
 import * as PIXI from 'pixi.js';
 
-import { Line } from './components/Line';
-import { AxisFilter, AxisLine, AxisText } from './components/Axis';
+// PixiJS
+import { LinePixi } from './components/pixijs/Line';
+import { AxisFilterPixi, AxisLinePixi, AxisTextPixi } from './components/pixijs/Axis';
+
+// Canvas
+import { LineCanvas } from './components/canvas/Line';
+import { AxisFilterCanvas, AxisLineCanvas, AxisTextCanvas } from './components/canvas/Axis';
 
 /* --- Constants --- */
 const width = window.innerWidth;
-const height = 600;
+const height = 350;
 const xOffset = 50;
 const yOffset = 50;
 
@@ -65,38 +70,60 @@ function onDragEnd() {
 }
 
 function main() {
+
+  /* ----------- PixiJS ----------- */
   app.stage.interactive = true;
   app.stage.hitArea = app.screen;
   app.stage.on('pointerup', onDragEnd);
   app.stage.on('pointerupoutside', onDragEnd);
 
+  /* ----------- Vanilla Canvas ----------- */
+  const canvasElement = document.createElement('canvas');
+  canvasElement.setAttribute('id', 'parCoordCanvas');
+  canvasElement.setAttribute('width', width);
+  canvasElement.setAttribute('height', height+yOffset+50);
+  document.body.appendChild(canvasElement);
+
+  const canvas = document.getElementById("parCoordCanvas");
+  if (!canvas.getContext) return;
+  const ctx = canvas.getContext("2d");
+
+  /* ----------- Drawing ----------- */
+
   // Generate random data
-  const rows = generateRandomData(100, 3);
+  const rows = generateRandomData(100, 20);
 
   let numAxis = rows[0].length;
   let axisSpacing = width / (numAxis + 1);
   let axisScales = getMinMaxByColumn(rows);
 
+  // Draw lines
+  let line;
+  for (let i = 0; i < rows.length; i++) {
+    line = new LinePixi(calculateLine(rows[i], numAxis, axisSpacing, axisScales));
+    app.stage.addChild(line);
+
+    line = new LineCanvas(ctx, calculateLine(rows[i], numAxis, axisSpacing, axisScales));
+  }
+
   // Draw axes
   let axisLine, axisText, axisFilterUpper, axisFilterLower;
   for (let i = 0; i < numAxis; i++) {
-    axisLine = new AxisLine([xOffset + i * axisSpacing, yOffset], [xOffset + i * axisSpacing, yOffset + height])
-    axisText = new AxisText(`Dim-${i}`, {
+    axisLine = new AxisLinePixi([xOffset + i * axisSpacing, yOffset], [xOffset + i * axisSpacing, yOffset + height])
+    axisText = new AxisTextPixi(`Dim-${i}`, {
       fontFamily: "Arial",
       fontSize: 24,
       fill: "black"
     },
     [i * axisSpacing, height + yOffset + 20]);
-    axisFilterUpper = new AxisFilter(app, "upper", [xOffset + i * axisSpacing, yOffset], onDragStart);
-    axisFilterLower = new AxisFilter(app, "lower", [xOffset + i * axisSpacing, yOffset + height], onDragStart);
+    axisFilterUpper = new AxisFilterPixi(app, "upper", [xOffset + i * axisSpacing, yOffset], onDragStart);
+    axisFilterLower = new AxisFilterPixi(app, "lower", [xOffset + i * axisSpacing, yOffset + height], onDragStart);
     app.stage.addChild(axisLine, axisText, axisFilterUpper, axisFilterLower);
-  }
 
-  // Draw lines
-  let line;
-  for (let i = 0; i < rows.length; i++) {
-    line = new Line(calculateLine(rows[i], numAxis, axisSpacing, axisScales));
-    app.stage.addChild(line);
+    axisLine = new AxisLineCanvas(ctx, [xOffset + i * axisSpacing, yOffset], [xOffset + i * axisSpacing, yOffset + height])
+    axisText = new AxisTextCanvas(ctx, `Dim-${i}`, "24px arial", [i * axisSpacing, height + yOffset + 20]);
+    axisFilterUpper = new AxisFilterCanvas(ctx, "upper", [xOffset + i * axisSpacing, yOffset-10]);
+    axisFilterLower = new AxisFilterCanvas(ctx, "lower", [xOffset + i * axisSpacing, yOffset + height]);
   }
 }
 

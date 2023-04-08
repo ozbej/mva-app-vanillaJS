@@ -1,6 +1,6 @@
 import { SmoothGraphics as Graphics } from '@pixi/graphics-smooth';
 
-export class Line extends Graphics {
+export class LinePixi extends Graphics {
   constructor(points) {
     super();
     this.lineStyle(1, 0x0000ff, 1);

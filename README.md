@@ -5,4 +5,4 @@
 3. Run `npm run dev` to run the application on `http://localhost:5173/`
 
 # Deployment setup
-1. Run `npm run build` to create a `dist` folder, which can be deployed
+Run `npm run build` to create a `dist` folder, which can be deployed

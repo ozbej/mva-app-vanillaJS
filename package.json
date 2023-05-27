@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@pixi/graphics-smooth": "^1.0.0",
+    "konva": "^9.0.2",
     "pixi.js": "^7.2.1"
   }
 }

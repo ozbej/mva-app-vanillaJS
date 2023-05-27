@@ -1,0 +1,9 @@
+.canvas-container {
+  position: relative;
+}
+
+.canvas-container canvas, div {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
